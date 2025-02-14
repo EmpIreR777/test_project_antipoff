@@ -8,6 +8,7 @@ from app.dao.query_endpoints_dao import QueryDAO, HistoryDAO
 
 
 async def add_query_in_bd(session: AsyncSession, query):
+    """Добавляет запрос в базу данных и получает результат из внешнего сервиса."""
     try:
         new_query = await QueryDAO.add(
             session=session, **query.dict()
@@ -15,7 +16,7 @@ async def add_query_in_bd(session: AsyncSession, query):
         try:
             async with httpx.AsyncClient() as client:
                 response = await client.get(
-                    'http://localhost:3000/history', timeout=60
+                    'http://localhost:5000/history', timeout=60
                     )
                 response.raise_for_status()
                 result_data = response.json()
@@ -40,6 +41,7 @@ async def add_query_in_bd(session: AsyncSession, query):
 
 
 async def find_all_histories(session: AsyncSession):
+    """Возвращает всю историю запросов."""
     result_all = await QueryDAO.find_all(session=session)
     if not result_all:
         raise HTTPException(
@@ -50,6 +52,7 @@ async def find_all_histories(session: AsyncSession):
 
 
 async def find_detail_histories(session: AsyncSession, cadastral_number: str):
+    """Возвращает детальную историю запросов по кадастровому номеру."""
     result_detail = await HistoryDAO.find_histories_by_cadastral_number(
         session=session, cadastral_number=cadastral_number
         )
@@ -62,6 +65,7 @@ async def find_detail_histories(session: AsyncSession, cadastral_number: str):
 
 
 async def get_status_result(session: AsyncSession, query_id: int):
+    """Возвращает статус результата по ID запроса."""
     result_query_id = await HistoryDAO.find_one_or_none_by_id(
         session=session, query_id=query_id
         )

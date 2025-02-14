@@ -6,7 +6,7 @@ from app.core.config import settings
 
 
 def create_tokens(data: dict) -> dict:
-    # Текущее время в UTC
+    """Создает access и refresh токены."""
     now = datetime.now(timezone.utc)
 
     # AccessToken - 30 минут
@@ -34,6 +34,7 @@ def create_tokens(data: dict) -> dict:
 
 
 async def authenticate_user(user, password):
+    """Аутентифицирует пользователя по паролю."""
     if not user or verify_password(
         plain_password=password, hashed_password=user.password) is False:
         return None
@@ -41,6 +42,7 @@ async def authenticate_user(user, password):
 
 
 def set_tokens(response: Response, user_id: int):
+    """Устанавливает токены в cookies ответа."""
     new_tokens = create_tokens(data={'sub': str(user_id)})
     access_token = new_tokens.get('access_token')
     refresh_token = new_tokens.get('refresh_token')
@@ -66,8 +68,10 @@ pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
 
 
 def get_password_hash(password: str) -> str:
+    """Хэширует пароль."""
     return pwd_context.hash(password)
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
+    """Проверяет соответствие пароля и хэша."""
     return pwd_context.verify(plain_password, hashed_password)

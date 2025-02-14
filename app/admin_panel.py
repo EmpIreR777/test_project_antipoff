@@ -4,6 +4,7 @@ from app.auth.models import User, Role
 
 
 class RoleAdmin(ModelView, model=Role):
+    """Административная панель для управления ролями."""
     column_list = [Role.id, Role.name]
     column_searchable_list = [Role.name]
     column_sortable_list = [Role.id, Role.name]
@@ -14,6 +15,7 @@ class RoleAdmin(ModelView, model=Role):
 
 
 class UserAdmin(ModelView, model=User):
+    """Административная панель для управления пользователями."""
     column_list = [
         User.id,
         User.username,
@@ -33,6 +35,7 @@ class UserAdmin(ModelView, model=User):
 
 
 class QueryAdmin(ModelView, model=Query):
+    """Административная панель для управления запросами."""
     column_list = [
         Query.id,
         Query.cadastral_number,
@@ -48,6 +51,7 @@ class QueryAdmin(ModelView, model=Query):
 
 
 class HistoryAdmin(ModelView, model=History):
+    """Административная панель для управления историей запросов."""
     column_list = [
         History.id,
         History.query_id,

@@ -7,7 +7,20 @@ from app.controller.query_endpoints_controller import router as query_endpoints_
 from app.admin_panel import QueryAdmin, HistoryAdmin, UserAdmin, RoleAdmin
 
 
-app = FastAPI(title='Antipoff')
+app = FastAPI(
+    title='Antipoff',
+    description="""
+    **Antipoff** — это веб-приложение для управления пользователями, ролями и запросами кадастровых номеров.
+
+    Основные возможности:
+    - Регистрация и авторизация пользователей.
+    - Управление ролями пользователей.
+    - Работа с кадастровыми номерами: создание запросов и просмотр истории.
+    - Административная панель для управления данными.
+
+    Проект разработан с использованием FastAPI, SQLAlchemy, PostgreSQL и Docker-compose.
+    """
+        )
 
 
 app.include_router(auth_user_router)
