@@ -1,10 +1,10 @@
+import asyncio
 import logging
 from alembic import command
 from alembic.config import Config
 from sqlalchemy import create_engine, inspect, text
 from sqlalchemy.exc import DisconnectionError
 from app.core.config import settings
-import time
 
 
 logging.basicConfig(
@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 
 def run_migrations_with_retry(max_attempts=3, delay=4):
-    'Запускает миграции с повторными попытками при ошибках подключения'
+    """Запускает миграции с повторными попытками при ошибках подключения."""
     attempt = 0
     while attempt < max_attempts:
         try:
@@ -24,13 +24,14 @@ def run_migrations_with_retry(max_attempts=3, delay=4):
         except DisconnectionError as e:
             attempt += 1
             if attempt == max_attempts:
-                logger.error(f'Failed after {max_attempts} attempts: {e}')
+                logger.error(f'Потерпел неудачу после {max_attempts} попытки: {e}')
                 raise
-            logger.warning(f'Connection error (attempt {attempt}/{max_attempts}): {e}')
-            time.sleep(delay)
+            logger.warning(f'Ошибка соединения (попытки {attempt}/{max_attempts}): {e}')
+            asyncio.delay(delay)
 
 
 def run_migrations():
+    """Основная функция для миграций."""
     sync_url = settings.get_database_url().replace('postgresql+asyncpg:', 'postgresql:')
     engine = create_engine(sync_url)
 
@@ -47,17 +48,17 @@ def run_migrations():
 
         # Проверяем таблицы
         inspector = inspect(engine)
-        required_tables = ['users', 'categories', 'analytical_requests', 'goods', 'new_anl_configs']
+        required_tables = ['users', 'roles', 'histories', 'queries']
         existing_tables = inspector.get_table_names()
 
         missing_tables = set(required_tables) - set(existing_tables)
         if missing_tables:
-            raise Exception(f'Missing tables after migration: {missing_tables}')
+            raise Exception(f'Отсутствующие таблицы после переноса: {missing_tables}')
 
-        logger.info('Migrations completed successfully')
+        logger.info('Миграция успешно завершена')
 
     except Exception as e:
-        logger.error(f'Error during migrations: {e}')
+        logger.error(f'Ошибка во время миграции: {e}')
         raise
     finally:
         engine.dispose()
@@ -67,10 +68,10 @@ def check_connection(engine):
     try:
         with engine.connect() as conn:
             conn.execute(text('SELECT 1'))
-            logger.info('Database connection check: OK')
+            logger.info('Проверка подключения к базе данных: OK')
             return True
     except Exception as e:
-        logger.error(f'Database connection check failed: {e}')
+        logger.error(f'Не удалось проверить подключение к базе данных: {e}')
         return False
 
 

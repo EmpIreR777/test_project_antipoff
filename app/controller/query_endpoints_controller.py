@@ -20,19 +20,22 @@ async def create_query(
     query: QueryCreate,
     session: AsyncSession = Depends(get_db_session)
         ):
+    """Создает новый запрос и сохраняет его в базе данных."""
     response = await add_query_in_bd(session=session, query=query)
     return response
 
 
 @router.get('/ping')
 async def ping():
-    return {'status': 'Сервер запущен!'} # Если я правильно понял.
+    """Проверяет, запущен ли сервер."""
+    return {'status': 'Сервер запущен!'}
 
 
 @router.get('/history/all', response_model=List[QueryResponse])
 async def get_all_history(
     session: AsyncSession = Depends(get_db_session)
         ):
+    """Возвращает всю историю запросов."""
     history_all = await find_all_histories(session=session)
     return history_all
 
@@ -42,14 +45,16 @@ async def get_detail_history(
     cadastral_number: str,
     session: AsyncSession = Depends(get_db_session)
         ):
+    """Возвращает детальную историю запросов по кадастровому номеру."""
     history_detail = await find_detail_histories(
         session=session, cadastral_number=cadastral_number
         )
     return history_detail
 
 
-@router.get('/history')# И тут если я правильно понял.
+@router.get('/history')
 async def get_result():
+    """Возвращает случайный результат с задержкой от 1 до 60 секунд."""
     delay = random.randint(1, 60)
     probability = random.randint(0, 1)
     await asyncio.sleep(delay)

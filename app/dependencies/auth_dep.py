@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.dao.auth_dao import UsersDAO
 from app.auth.models import User
 from app.core.config import settings
-from app.dependencies.dao_dep import get_session_without_commit
+from app.db.session import get_db_session
 from app.exceptions import \
     TokenNoFound, NoJwtException, TokenExpiredException, NoUserIdException, \
           ForbiddenException, UserNotFoundException
@@ -31,20 +31,22 @@ def get_refresh_token(request: Request) -> str:
 
 async def check_refresh_token(
     token: str = Depends(get_refresh_token),
-    session: AsyncSession = Depends(get_session_without_commit)
-    ):
+    session: AsyncSession = Depends(get_db_session)
+        ):
     """ Проверяем refresh_token и возвращаем пользователя."""
     try:
         payload = jwt.decode(
             token,
             settings.SECRET_KEY,
             algorithms=[settings.ALGORITHM]
-        )
+            )
         user_id = payload.get("sub")
         if not user_id:
             raise NoJwtException
 
-        user = await UsersDAO(session).find_one_or_none_by_id(data_id=int(user_id))
+        user = await UsersDAO.find_one_or_none_by_id(
+            session=session, id=int(user_id)
+            )
         if not user:
             raise NoJwtException
 
@@ -55,12 +57,14 @@ async def check_refresh_token(
 
 async def get_current_user(
     token: str = Depends(get_access_token),
-    session: AsyncSession = Depends(get_session_without_commit)
-    ):
+    session: AsyncSession = Depends(get_db_session)
+        ):
     """Проверяем access_token и возвращаем пользователя."""
     try:
         # Декодируем токен
-        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+        payload = jwt.decode(
+            token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM]
+        )
     except ExpiredSignatureError:
         raise TokenExpiredException
     except JWTError:
@@ -76,14 +80,17 @@ async def get_current_user(
     if not user_id:
         raise NoUserIdException
 
-    user = await UsersDAO(session).find_one_or_none_by_id(data_id=int(user_id))
+    user = await UsersDAO.find_one_or_none_by_id(
+        session=session, id=int(user_id)
+        )
     if not user:
         raise UserNotFoundException
     return user
 
 
-async def get_current_admin_user(current_user: User = Depends(get_current_user)) -> User:
+async def get_current_admin_user(
+        current_user: User = Depends(get_current_user)) -> User:
     """Проверяем права пользователя как администратора."""
-    if current_user.role.id in [3, 4]:
+    if current_user.role.id == 1:
         return current_user
     raise ForbiddenException

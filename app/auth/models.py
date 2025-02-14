@@ -10,6 +10,7 @@ class Role(BaseModel):
     __tablename__ = 'roles'
 
     name: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
+
     users: Mapped[list['User']] = relationship(back_populates='role')
 
     def __repr__(self):
@@ -22,14 +23,14 @@ class User(BaseModel):
     username: Mapped[str] = mapped_column(
         String(50), nullable=False, unique=True
         )
-    password: Mapped[str] = mapped_column(
-        String(50), nullable=False, unique=True
-        )
     first_name: Mapped[str] = mapped_column(
         String(50), nullable=False
-        )
+        )   
     last_name: Mapped[str] = mapped_column(
         String(50), nullable=False
+        )
+    password: Mapped[str] = mapped_column(
+        String(50), nullable=False, unique=True
         )
     email: Mapped[str] = mapped_column(
         String(50), nullable=False, unique=True
